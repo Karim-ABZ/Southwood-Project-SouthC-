@@ -1,0 +1,1008 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LSTMB — Dossier SouthC</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@300;400;600;700&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --gold: #1e7fd4;
+    --gold-dim: #0f4a82;
+    --black: #050810;
+    --dark: #080d14;
+    --dark2: #0e1520;
+    --dark3: #161f2e;
+    --red: #0a2a5e;
+    --red-bright: #1a6fc4;
+    --white: #e8eef8;
+    --gray: #7a8fa8;
+    --gray-dim: #2e3d52;
+  }
+
+  body {
+    background: var(--black);
+    color: var(--white);
+    font-family: 'Barlow', sans-serif;
+    font-weight: 300;
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    text-align: center;
+    background: var(--black);
+    overflow: hidden;
+    padding: 4rem 2rem;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      repeating-linear-gradient(0deg, transparent, transparent 59px, rgba(30,127,212,0.05) 60px),
+      repeating-linear-gradient(90deg, transparent, transparent 59px, rgba(30,127,212,0.05) 60px);
+    pointer-events: none;
+  }
+
+  .hero-badge {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 600;
+    font-size: 11px;
+    letter-spacing: 6px;
+    text-transform: uppercase;
+    color: var(--gold);
+    border: 1px solid var(--gold-dim);
+    padding: 6px 20px;
+    margin-bottom: 3rem;
+    position: relative;
+  }
+  .hero-badge::before, .hero-badge::after {
+    content: '◆';
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 6px;
+    color: var(--gold);
+  }
+  .hero-badge::before { left: -14px; }
+  .hero-badge::after { right: -14px; }
+
+  .hero-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(80px, 16vw, 160px);
+    letter-spacing: 20px;
+    color: var(--white);
+    line-height: 0.9;
+    position: relative;
+  }
+  .hero-title span {
+    display: block;
+    font-size: clamp(14px, 3vw, 22px);
+    letter-spacing: 14px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 300;
+    color: var(--gold);
+    margin-top: 1rem;
+  }
+
+  .hero-divider {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin: 2.5rem 0;
+    width: 100%;
+    max-width: 500px;
+  }
+  .hero-divider::before, .hero-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+  }
+  .hero-divider::before { background: linear-gradient(to right, transparent, var(--gold-dim)); }
+  .hero-divider::after  { background: linear-gradient(to left, transparent, var(--gold-dim)); }
+  .hero-divider-icon { color: var(--gold); font-size: 12px; letter-spacing: 3px; }
+
+  .hero-sub {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 13px;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    color: var(--gray);
+  }
+
+  .hero-stats { display: flex; gap: 4rem; margin-top: 4rem; }
+  .stat { text-align: center; }
+  .stat-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 42px;
+    color: var(--gold);
+    line-height: 1;
+  }
+  .stat-label {
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--gray);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 400;
+    margin-top: 4px;
+  }
+
+  .scroll-hint {
+    position: absolute;
+    bottom: 2.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 10px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--gray-dim);
+    font-family: 'Barlow Condensed', sans-serif;
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
+
+  /* SIDEBAR */
+  .sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 100;
+    width: 240px;
+    background: linear-gradient(180deg, #050810 0%, #080d18 100%);
+    border-right: 1px solid rgba(30,127,212,0.15);
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    overflow: hidden;
+  }
+
+  .sidebar-brand {
+    padding: 2rem 1.5rem 1.5rem;
+    border-bottom: 1px solid rgba(30,127,212,0.12);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .sidebar-brand::before {
+    content: '';
+    position: absolute;
+    top: -40px;
+    left: -40px;
+    width: 150px;
+    height: 150px;
+    background: radial-gradient(circle, rgba(30,127,212,0.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .sidebar-brand-tag {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 9px;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 6px;
+    opacity: 0.8;
+  }
+
+  .sidebar-brand-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 26px;
+    letter-spacing: 6px;
+    color: var(--white);
+    line-height: 1;
+    text-shadow: 0 0 20px rgba(30,127,212,0.4);
+  }
+
+  .sidebar-brand-sub {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 9px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--gray-dim);
+    margin-top: 6px;
+  }
+
+  .sidebar-scroll {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem 0 2rem;
+  }
+
+  .sidebar-scroll::-webkit-scrollbar { width: 3px; }
+  .sidebar-scroll::-webkit-scrollbar-track { background: transparent; }
+  .sidebar-scroll::-webkit-scrollbar-thumb { background: var(--dark3); border-radius: 3px; }
+
+  .sidebar-category {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 9px;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    color: var(--gold);
+    padding: 1.2rem 1.5rem 0.4rem;
+    opacity: 0.7;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .sidebar-category::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: rgba(30,127,212,0.15);
+  }
+
+  .sidebar-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 1.5rem;
+    cursor: pointer;
+    text-decoration: none;
+    position: relative;
+    transition: all 0.25s ease;
+    margin: 1px 8px;
+    border-radius: 6px;
+  }
+
+  .sidebar-item:hover {
+    background: rgba(30,127,212,0.08);
+  }
+
+  .sidebar-item.active {
+    background: rgba(30,127,212,0.12);
+  }
+
+  .sidebar-item.active::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 20%;
+    bottom: 20%;
+    width: 2px;
+    background: var(--gold);
+    border-radius: 2px;
+    box-shadow: 0 0 8px rgba(30,127,212,0.8);
+  }
+
+  .sidebar-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 13px;
+    color: var(--gray-dim);
+    min-width: 20px;
+    transition: color 0.25s;
+  }
+
+  .sidebar-item:hover .sidebar-num,
+  .sidebar-item.active .sidebar-num {
+    color: var(--gold);
+  }
+
+  .sidebar-icon {
+    font-size: 15px;
+    min-width: 22px;
+    text-align: center;
+    transition: transform 0.25s, filter 0.25s;
+  }
+
+  .sidebar-item:hover .sidebar-icon,
+  .sidebar-item.active .sidebar-icon {
+    transform: scale(1.15);
+    filter: drop-shadow(0 0 4px rgba(30,127,212,0.7));
+  }
+
+  .sidebar-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 600;
+    font-size: 13px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--gray);
+    transition: color 0.25s;
+    flex: 1;
+  }
+
+  .sidebar-item:hover .sidebar-label,
+  .sidebar-item.active .sidebar-label {
+    color: var(--white);
+  }
+
+  .sidebar-indicator {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: transparent;
+    border: 1px solid var(--gray-dim);
+    transition: all 0.3s;
+    flex-shrink: 0;
+  }
+
+  .sidebar-item.active .sidebar-indicator {
+    background: var(--gold);
+    border-color: var(--gold);
+    box-shadow: 0 0 8px rgba(30,127,212,0.9);
+  }
+
+  .sidebar-footer {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid rgba(30,127,212,0.1);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 9px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--gray-dim);
+    text-align: center;
+  }
+
+  body {
+    padding-left: 240px;
+  }
+
+  @media (max-width: 1000px) {
+    .sidebar { display: none; }
+    body { padding-left: 0; }
+  }
+  .hero::after {
+    content: '';
+    position: absolute;
+    width: 600px;
+    height: 600px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(30,127,212,0.15) 0%, transparent 70%);
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    animation: pulse-glow 4s ease-in-out infinite;
+  }
+
+  @keyframes pulse-glow {
+    0%, 100% { opacity: 0.6; transform: translate(-50%, -50%) scale(1); }
+    50% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
+  }
+
+  .light-orb {
+    position: fixed;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 0;
+    filter: blur(80px);
+    opacity: 0.07;
+    animation: orb-float 8s ease-in-out infinite;
+  }
+
+  .light-orb-1 {
+    width: 500px;
+    height: 500px;
+    background: #1e7fd4;
+    top: -100px;
+    right: 10%;
+    animation-delay: 0s;
+  }
+
+  .light-orb-2 {
+    width: 400px;
+    height: 400px;
+    background: #0a4a9e;
+    bottom: 20%;
+    right: 5%;
+    animation-delay: -3s;
+  }
+
+  .light-orb-3 {
+    width: 300px;
+    height: 300px;
+    background: #1e7fd4;
+    top: 40%;
+    left: 220px;
+    animation-delay: -5s;
+  }
+
+  @keyframes orb-float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-30px); }
+  }
+
+  /* HERO TITLE GLOW */
+  .hero-title {
+    text-shadow: 0 0 60px rgba(30,127,212,0.3), 0 0 120px rgba(30,127,212,0.1);
+  }
+
+  /* SECTION GLOW AU HOVER */
+  .member-card {
+    transition: background 0.3s, box-shadow 0.3s;
+  }
+  .member-card:hover {
+    box-shadow: inset 0 0 30px rgba(30,127,212,0.05), 0 0 20px rgba(30,127,212,0.05);
+  }
+
+  /* LORE QUOTE GLOW */
+  .lore-quote {
+    box-shadow: -3px 0 20px rgba(30,127,212,0.2), 0 0 40px rgba(30,127,212,0.05);
+  }
+
+  /* LEADS BLOCK GLOW */
+  .leads-block {
+    box-shadow: -3px 0 20px rgba(30,127,212,0.15);
+  }
+
+  /* SECTION TITLE SUBTLE GLOW */
+  .section-title {
+    text-shadow: 0 0 40px rgba(30,127,212,0.1);
+  }
+
+  /* ANIMATIONS SCROLL */
+  section {
+    opacity: 0;
+    transform: translateY(40px);
+    transition: opacity 0.8s ease, transform 0.8s ease;
+  }
+
+  section.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* FLASH DE TRANSITION */
+  .page-flash {
+    position: fixed;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(30,127,212,0.15), transparent);
+    pointer-events: none;
+    z-index: 999;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .page-flash.active {
+    opacity: 1;
+  }
+
+  /* LINE SWEEP */
+  .section-title::after {
+    content: '';
+    display: block;
+    width: 0;
+    height: 1px;
+    background: var(--gold);
+    margin-top: 0.5rem;
+    transition: width 1.2s ease;
+  }
+
+  section.visible .section-title::after {
+    width: 100%;
+  }
+  .particles {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+  }
+
+  .particle {
+    position: absolute;
+    width: 3px;
+    height: 3px;
+    background: rgba(30,127,212,1);
+    border-radius: 50%;
+    box-shadow: 0 0 6px rgba(30,127,212,0.8), 0 0 12px rgba(30,127,212,0.4);
+    animation: particle-rise linear infinite;
+  }
+
+  @keyframes particle-rise {
+    0% { transform: translateY(100vh) translateX(0); opacity: 0; }
+    10% { opacity: 1; }
+    90% { opacity: 0.8; }
+    100% { transform: translateY(-10vh) translateX(20px); opacity: 0; }
+  }
+
+  /* SECTIONS */
+  section {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 6rem 2rem;
+  }
+  .section-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 600;
+    font-size: 10px;
+    letter-spacing: 6px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 0.5rem;
+  }
+  .section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(40px, 6vw, 64px);
+    letter-spacing: 8px;
+    color: var(--white);
+    line-height: 1;
+    margin-bottom: 3rem;
+    border-bottom: 1px solid var(--dark3);
+    padding-bottom: 1.5rem;
+  }
+
+  p { color: #8aaac8; font-size: 15px; line-height: 1.9; margin-bottom: 1.2rem; }
+  .highlight { color: var(--gold); font-weight: 500; }
+
+  /* LORE QUOTE */
+  .lore-quote {
+    border-left: 3px solid var(--gold);
+    padding: 1.5rem 2rem;
+    margin: 2.5rem 0;
+    background: var(--dark2);
+    position: relative;
+  }
+  .lore-quote::before {
+    content: '"';
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 80px;
+    color: var(--gold-dim);
+    position: absolute;
+    top: -10px;
+    left: 1rem;
+    line-height: 1;
+  }
+  .lore-quote p { font-style: italic; font-size: 17px; color: var(--white); padding-left: 1rem; }
+
+  /* MEMBRES */
+  .members-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.5px;
+    margin-top: 2rem;
+    background: var(--dark3);
+    border: 1.5px solid var(--dark3);
+  }
+  .member-card {
+    background: var(--dark);
+    padding: 2rem 1.5rem;
+    position: relative;
+    transition: background 0.2s;
+  }
+  .member-card:hover { background: var(--dark2); }
+  .member-role { font-family: 'Barlow Condensed', sans-serif; font-size: 10px; letter-spacing: 4px; text-transform: uppercase; color: var(--gold); margin-bottom: 0.5rem; }
+  .member-name { font-family: 'Bebas Neue', sans-serif; font-size: 28px; letter-spacing: 4px; color: var(--white); margin-bottom: 0.25rem; }
+  .member-alias { font-size: 12px; color: var(--gray); margin-bottom: 1rem; font-family: 'Barlow Condensed', sans-serif; letter-spacing: 2px; }
+  .member-desc { font-size: 13px; color: #5a7a9a; line-height: 1.7; margin: 0; }
+  .member-discord { 
+    display: inline-block; 
+    margin-top: 1rem; 
+    font-size: 11px; 
+    letter-spacing: 2px; 
+    color: #4ab3f4;
+    font-family: 'Barlow Condensed', sans-serif;
+    text-shadow: 0 0 8px rgba(74,179,244,0.9), 0 0 20px rgba(30,127,212,0.6), 0 0 40px rgba(30,127,212,0.3);
+    animation: led-pulse 2.5s ease-in-out infinite;
+  }
+
+  @keyframes led-pulse {
+    0%, 100% { text-shadow: 0 0 8px rgba(74,179,244,0.9), 0 0 20px rgba(30,127,212,0.6), 0 0 40px rgba(30,127,212,0.3); }
+    50% { text-shadow: 0 0 12px rgba(74,179,244,1), 0 0 30px rgba(30,127,212,0.9), 0 0 60px rgba(30,127,212,0.5); }
+  }
+  .member-number { position: absolute; top: 1.5rem; right: 1.5rem; font-family: 'Bebas Neue', sans-serif; font-size: 42px; color: var(--dark3); line-height: 1; }
+
+  /* OBJECTIFS */
+  .obj-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--dark3); margin-top: 2rem; }
+  .obj-cell { background: var(--dark); padding: 2rem; position: relative; }
+  .obj-label { font-family: 'Barlow Condensed', sans-serif; font-size: 10px; letter-spacing: 4px; text-transform: uppercase; color: var(--gold); margin-bottom: 1rem; display: flex; align-items: center; gap: 8px; }
+  .obj-label::before { content: ''; display: inline-block; width: 20px; height: 1px; background: var(--gold); }
+  .obj-cell ul { list-style: none; padding: 0; }
+  .obj-cell ul li { font-size: 13px; color: #5a7a9a; padding: 6px 0; border-bottom: 1px solid var(--dark3); display: flex; align-items: flex-start; gap: 8px; }
+  .obj-cell ul li::before { content: '—'; color: var(--gold-dim); flex-shrink: 0; font-size: 11px; margin-top: 2px; }
+  .obj-cell ul li:last-child { border-bottom: none; }
+
+  /* IDENTITE */
+  .identity-row { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; margin-top: 2rem; }
+  .id-block-title { font-family: 'Barlow Condensed', sans-serif; font-size: 11px; letter-spacing: 5px; text-transform: uppercase; color: var(--gold); margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--dark3); }
+
+  /* FACETTES */
+  .facettes-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--dark3); margin-top: 2rem; }
+  .facette-block { background: var(--dark); padding: 2.5rem; }
+  .facette-type { font-family: 'Bebas Neue', sans-serif; font-size: 11px; letter-spacing: 6px; margin-bottom: 1.5rem; }
+  .facette-type.legal { color: #4ab3f4; }
+  .facette-type.illegal { color: #1e7fd4; }
+  .facette-block ul { list-style: none; padding: 0; }
+  .facette-block ul li { font-size: 13px; color: #5a7a9a; padding: 7px 0; border-bottom: 1px solid var(--dark3); display: flex; gap: 10px; align-items: flex-start; }
+  .facette-block ul li::before { flex-shrink: 0; margin-top: 2px; font-size: 10px; content: '●'; }
+  .facette-block.legal-block ul li::before { color: #4ab3f4; }
+  .facette-block.illegal-block ul li::before { color: #1e7fd4; }
+  .facette-block ul li:last-child { border-bottom: none; }
+
+  /* LEADS */
+  .leads-block { background: var(--dark2); border: 1px solid var(--dark3); border-left: 3px solid var(--red-bright); padding: 2rem 2.5rem; margin-top: 2rem; }
+  .leads-title { font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 6px; color: var(--red-bright); margin-bottom: 1.5rem; }
+  .lead-item { display: flex; align-items: flex-start; gap: 1rem; padding: 1rem 0; border-bottom: 1px solid var(--dark3); }
+  .lead-item:last-child { border-bottom: none; }
+  .lead-num { font-family: 'Bebas Neue', sans-serif; font-size: 32px; color: var(--dark3); line-height: 1; min-width: 40px; }
+  .lead-name { font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 14px; letter-spacing: 2px; text-transform: uppercase; color: var(--white); margin-bottom: 3px; }
+  .lead-desc { font-size: 13px; color: var(--gray); margin: 0; line-height: 1.6; }
+
+  /* FULL DIVIDER */
+  .full-divider { width: 100%; height: 1px; background: var(--dark3); }
+
+  /* FOOTER */
+  footer { border-top: 1px solid var(--dark3); text-align: center; padding: 4rem 2rem; background: var(--dark); }
+  .footer-logo { font-family: 'Bebas Neue', sans-serif; font-size: 48px; letter-spacing: 12px; color: var(--gold); margin-bottom: 0.5rem; }
+  .footer-sub { font-family: 'Barlow Condensed', sans-serif; font-size: 10px; letter-spacing: 6px; text-transform: uppercase; color: var(--gray-dim); }
+
+  @media (max-width: 600px) {
+    .obj-grid { grid-template-columns: 1fr; }
+    .facettes-grid { grid-template-columns: 1fr; }
+    .identity-row { grid-template-columns: 1fr; }
+    .hero-stats { gap: 2rem; }
+    nav { gap: 1rem; flex-wrap: wrap; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-badge">Dossier officiel · SouthC · 2026</div>
+  <div class="hero-title">
+    South Side Crip
+    <span>Southwood Project · SouthC</span>
+  </div>
+  <div class="hero-divider"><span class="hero-divider-icon">◆ ◆ ◆</span></div>
+  <div class="hero-sub">Southwood Project · Clique · NoFace Server</div>
+  <div class="hero-stats">
+    <div class="stat"><div class="stat-num">6</div><div class="stat-label">Membres</div></div>
+    <div class="stat"><div class="stat-num">SC</div><div class="stat-label">Zone</div></div>
+    <div class="stat"><div class="stat-num">03</div><div class="stat-label">Deadline</div></div>
+  </div>
+  <div class="scroll-hint">↓ &nbsp; Défiler</div>
+</div>
+
+<div class="page-flash" id="flash"></div>
+
+<!-- LUMIÈRES -->
+<div class="light-orb light-orb-1"></div>
+<div class="light-orb light-orb-2"></div>
+<div class="light-orb light-orb-3"></div>
+<div class="particles" id="particles"></div>
+
+<!-- SIDEBAR -->
+<nav class="sidebar" id="sidebar">
+  <div class="sidebar-brand">
+    <div class="sidebar-brand-tag">Dossier · NoFace Server</div>
+    <div class="sidebar-brand-name">South Side Crip</div>
+    <div class="sidebar-brand-sub">Southwood Project · SouthC</div>
+  </div>
+
+  <div class="sidebar-scroll">
+    <div class="sidebar-category">Lore</div>
+    <a class="sidebar-item" href="#histoire">
+            <span class="sidebar-num">01</span>
+      <span class="sidebar-label">Histoire</span>
+      <span class="sidebar-indicator"></span>
+    </a>
+
+    <div class="sidebar-category">Groupe</div>
+    <a class="sidebar-item" href="#membres">
+            <span class="sidebar-num">02</span>
+      <span class="sidebar-label">Membres</span>
+      <span class="sidebar-indicator"></span>
+    </a>
+    <a class="sidebar-item" href="#objectifs">
+            <span class="sidebar-num">03</span>
+      <span class="sidebar-label">Objectifs</span>
+      <span class="sidebar-indicator"></span>
+    </a>
+
+    <div class="sidebar-category">Identité</div>
+    <a class="sidebar-item" href="#identite">
+            <span class="sidebar-num">04</span>
+      <span class="sidebar-label">Identité</span>
+      <span class="sidebar-indicator"></span>
+    </a>
+    <a class="sidebar-item" href="#activites">
+            <span class="sidebar-num">05</span>
+      <span class="sidebar-label">Activités</span>
+      <span class="sidebar-indicator"></span>
+    </a>
+
+    <div class="sidebar-category">Hors RP</div>
+    <a class="sidebar-item" href="#leads">
+            <span class="sidebar-num">06</span>
+      <span class="sidebar-label">À propos</span>
+      <span class="sidebar-indicator"></span>
+    </a>
+  </div>
+
+  <div class="sidebar-footer">SSC · 2026</div>
+</nav>
+
+<!-- HISTOIRE -->
+<section id="histoire">
+  <div class="section-label">01 — Origine</div>
+  <div class="section-title">Histoire & Lore</div>
+  <p><span class="highlight">South Side Crip</span> est née dans le béton du Southwood, SouthC, là où les gamins grandissent entre les allées des immeubles, les coins de blocs et les regards des anciens. Un quartier que personne ne vient sauver, alors on apprend à se sauver soi-même. C'est dans ce contexte, entre la misère et la fierté, qu'une poignée de jeunes Noirs du South ont décidé de se serrer les coudes pour de vrai.</p>
+  <p>Tout part de Dre, né et élevé à SouthC. Son père s'est fait descendre sur un coin de bloc quand il avait huit ans. Sa mère a tenu le coup, mais le quartier l'a formé avant l'école. Dre comprend vite que dans Southwood, la seule chose qui protège, c'est le nombre et le respect. Il réunit cinq gars en qui il a une confiance absolue — pas des inconnus, des frères de sang, des gens avec qui il a grandi, et pose une règle simple : <span class="highlight">on se doit tout entre nous. À l'extérieur, on ne doit rien à personne.</span></p>
+  <div class="lore-quote">
+    <p>On n'a pas choisi ce quartier. Mais on a choisi de pas le laisser nous détruire.</p>
+  </div>
+  <p>Au départ, personne ne les prend au sérieux. Six personne du bloc, 0 réputation, pas de réseau. Mais South Side Crip, ils cherchent pas être connu ils cherchent surtout la solidité. Pendant des mois, le groupe pose ses bases discrètement : contrôle progressif des points stratégiques de SouthC, premières affaires, premières alliances. Pas d'éclat inutile. Pas de guerre gratuite. Juste une montée en puissance silencieuse.</p>
+  <p>Aujourd'hui, South Side Crip c'est six membres soudés par le sang et la rue. Une clique qui porte les couleurs bleues avec fierté, qui connaît chaque recoin de Southwood, et qui a une ambition claire : <span class="highlight">devenir la référence de SouthC</span> : respectée, crainte si nécessaire, mais jamais trahie par ses propres codes.</p>
+</section>
+
+<div class="full-divider"></div>
+
+<!-- MEMBRES -->
+<section id="membres">
+  <div class="section-label">02 — Équipe</div>
+  <div class="section-title">Les Membres</div>
+  <div class="members-grid">
+    <div class="member-card">
+      <div class="member-number">01</div>
+      <div class="member-name">DRE "OG"</div>
+      <p class="member-desc">Daron absent, La reine qui bossait deux jobs. Dre a grandi seul dans les halls de SouthC. À 16 ans il gérait déjà le coin. Personne lui a rien appris, il a tout vu, tout retenu. C'est lui qui a fondé le groupe. Sa parole est finale.</p>
+      <div class="member-discord">Discord ID : 1127005492099678208</div>
+    </div>
+    <div class="member-card">
+      <div class="member-number">02</div>
+      <div class="member-name">J.C "CANNON"</div>
+      <p class="member-desc">Jaylen et son frère Devonte ont grandi dans le même appart, même mère, même galère. Jaylen c'est le grand, il a toujours mis son corps en premier pour protéger les siens. Dans la clique, il fait pareil. Inarrêtable quand il est lancé.</p>
+      <div class="member-discord">Discord ID : 900334198802489374</div>
+    </div>
+    <div class="member-card">
+      <div class="member-number">03</div>
+      <div class="member-name">MALIK "STACKS"</div>
+      <p class="member-desc">Malik a jamais touché à la rue directement. Il observait, calculait. À 18 ans il savait déjà comment faire tourner de l'argent sale en propre. Dre l'a recruté parce qu'il avait besoin d'un cerveau. Stacks a jamais déçu.</p>
+      <div class="member-discord">Discord ID : 1309177447362854922</div>
+    </div>
+    <div class="member-card">
+      <div class="member-number">04</div>
+      <div class="member-name">DEVONTE</div>
+      <p class="member-desc">Le petit frère. Là où Jaylen fonce, Devonte disparaît. Même mère, caractères opposés. Devonte a appris à la survie autrement, discrétion totale, zéro trace. Il peut traverser SouthC sans que personne l'ait vu passer.</p>
+      <div class="member-discord">Discord ID : 798881388370984960</div>
+    </div>
+    <div class="member-card">
+      <div class="member-number">05</div>
+      <div class="member-name">KY "ICE"</div>
+      <p class="member-desc">Ky a perdu sa copine qui passait le voir dans le quartier dans une fusillade à SouthC. Depuis ce jour-là, plus aucune émotion n'apparait sur son visage. Il s'est rapproché du groupe naturellement. Il entend tout, et plus aucune peine ne se fait ressentir chez lui...</p>
+      <div class="member-discord">Discord ID : 508385118432264238</div>
+    </div>
+    <div class="member-card">
+      <div class="member-number">06</div>
+      <div class="member-name">TYRESE "T.BLOCK"</div>
+      <p class="member-desc">Tyrese a jamais quitté SouthC. Pas une seule fois. Il connaît chaque visage, chaque tension, chaque histoire du quartier. C'est lui qui tient le terrain au quotidien. Ce bloc c'est sa vie, il le protège comme si c'était sa famille.</p>
+      <div class="member-discord">Discord ID : 1356971240308605039</div>
+    </div>
+  </div>
+</section>
+
+<div class="full-divider"></div>
+
+<!-- OBJECTIFS -->
+<section id="objectifs">
+  <div class="section-label">03 — Stratégie</div>
+  <div class="section-title">Objectifs</div>
+  <div class="obj-grid">
+    <div class="obj-cell">
+      <div class="obj-label">Court terme</div>
+      <ul>
+        <li>Sécuriser et marquer notre territoire sur SouthC</li>
+        <li>Établir les tout premiers deals stables dans le coin</li>
+        <li>Construire une réputation solide</li>
+        <li>Identifier les acteurs clés pour le quartier</li>
+      </ul>
+    </div>
+    <div class="obj-cell">
+      <div class="obj-label">Moyen terme</div>
+      <ul>
+        <li>Développer notre réseau de contacts et d'alliés</li>
+        <li>Étendre nos activités légales comme couverture</li>
+        <li>Nouer des liens avec d'autres cliques sur le serveur</li>
+        <li>Accumuler assez de capitale et de l'influence aussi</li>
+      </ul>
+    </div>
+    <div class="obj-cell">
+      <div class="obj-label">Long terme</div>
+      <ul>
+        <li>Devenir un gang incontournable de SouthC</li>
+        <li>Contrôler les flux économiques du quartier</li>
+        <li>Protéger et faire grandir notre communauté</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<div class="full-divider"></div>
+
+<!-- IDENTITE -->
+<section id="identite">
+  <div class="section-label">04 — ADN</div>
+  <div class="section-title">Identité du groupe</div>
+  <div class="identity-row">
+    <div class="id-block">
+      <div class="id-block-title">Valeurs fondatrices</div>
+      <p>Nous reposons sur trois piliers : <span class="highlight">la loyauté</span>, <span class="highlight">la discrétion</span>, et <span class="highlight">l'efficacité</span>. On agit pas par ego nous. On attaque pas sans raison. Chaque chose qu'on fait est calculée, chaque parole mesurée.</p>
+      <p>Chez nous on ne tolère ni la trahison, ni le manque de respect envers les siens. En interne, on se doit tout. À l'extérieur, on doit rien à personne.</p>
+    </div>
+    <div class="id-block">
+      <div class="id-block-title">Code de conduite</div>
+      <p>On bavarde pas en public sur nos affaires internes. Pas d'action solo non validée. Pas de cible civile gratuite. Le respect du code, c'est ce qui nous différencie d'un groupe ordinaire.</p>
+      <p>En cas de conflit ou quoi, la parole du chef est finale.</p>
+    </div>
+    <div class="id-block">
+      <div class="id-block-title">Esthétique & couleurs</div>
+      <p>Le bleu, c'est notre couleur. Pas besoin d'expliquer pourquoi, ceux qui savent, savent. On le porte avec fierté, sans en faire trop. <span class="highlight">Le bleu parle pour nous directement.</span></p>
+      <p>Pas de truc inutile, pas de show. Mais une présence qui se fait remarquer.</p>
+    </div>
+    <div class="id-block">
+      <div class="id-block-title">Réputation visée</div>
+      <p>Être connus comme fiables, cependant dangereux si nécessaires, respectueux quand <span class="highlight">c'est mérité</span>. Une clique avec qui les deals se passent bien. Une clique qu'on aimerait pas avoir en tant qu'ennemie.</p>
+    </div>
+  </div>
+</section>
+
+<div class="full-divider"></div>
+
+<!-- FACETTES -->
+<section id="activites">
+  <div class="section-label">05 — Activités</div>
+  <div class="section-title">Facettes</div>
+  <div class="facettes-grid">
+    <div class="facette-block legal-block">
+      <div class="facette-type legal">◆ Facette légale</div>
+      <ul>
+        <li>Bar de quartier — point de rencontre officiel</li>
+        <li>Association de quartier</li>
+      </ul>
+    </div>
+    <div class="facette-block illegal-block">
+      <div class="facette-type illegal">◆ Facette illégale</div>
+      <ul>
+        <li>Vente de drogue</li>
+        <li>Vol à main armée</li>
+        <li>Racket & extorsion</li>
+        <li>Trafic d'armes</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<div class="full-divider"></div>
+
+<!-- LEADS -->
+<section id="leads">
+  <div class="section-label">06 — Profil joueur</div>
+  <div class="section-title">À propos</div>
+
+  <div class="leads-block">
+    <div class="leads-title">Expériences RP</div>
+
+    <div class="lead-item">
+      <div class="lead-num" style="color: var(--gold); font-size:18px; min-width:30px;">—</div>
+      <div class="lead-content">
+        <div class="lead-name">21 ans</div>
+      </div>
+    </div>
+
+    <div class="lead-item">
+      <div class="lead-num">01</div>
+      <div class="lead-content">
+        <div class="lead-name">FlashLand WL — Leader Famille Bonanno Italienne</div>
+      </div>
+    </div>
+
+    <div class="lead-item">
+      <div class="lead-num">02</div>
+      <div class="lead-content">
+        <div class="lead-name">Vision V1 — Lead BMF</div>
+      </div>
+    </div>
+
+    <div class="lead-item">
+      <div class="lead-num">03</div>
+      <div class="lead-content">
+        <div class="lead-name">Story Life WL — Co-Lead Creeps</div>
+      </div>
+    </div>
+
+    <div class="lead-item">
+      <div class="lead-num">04</div>
+      <div class="lead-content">
+        <div class="lead-name">District WL — Lead Get Money Boyz</div>
+      </div>
+    </div>
+
+    <div class="lead-item">
+      <div class="lead-num">05</div>
+      <div class="lead-content">
+        <div class="lead-name">Greentown WL — Indépendant</div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">South Side Crip</div>
+  <div class="footer-sub">Southwood Project · SouthC · Clique</div>
+  <br>
+  <div style="font-size:11px; color: #333; margin-top:1rem; font-family:'Barlow Condensed',sans-serif; letter-spacing:3px;">DOSSIER SOUMIS · NOFACE SERVER · DEADLINE 03/06/2026</div>
+</footer>
+
+<script>
+  const sections = document.querySelectorAll('section[id]');
+  const items = document.querySelectorAll('.sidebar-item');
+  const flash = document.getElementById('flash');
+  let lastSection = '';
+
+  // Scroll reveal avec IntersectionObserver
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+
+        // Flash de transition quand on change de section
+        const id = entry.target.getAttribute('id');
+        if (id !== lastSection) {
+          lastSection = id;
+          flash.classList.add('active');
+          setTimeout(() => flash.classList.remove('active'), 400);
+        }
+      }
+    });
+  }, { threshold: 0.1 });
+
+  sections.forEach(s => observer.observe(s));
+
+  // Sidebar active state
+  window.addEventListener('scroll', () => {
+    let current = '';
+    sections.forEach(section => {
+      const top = section.offsetTop - 200;
+      if (window.scrollY >= top) current = section.getAttribute('id');
+    });
+    items.forEach(item => {
+      item.classList.remove('active');
+      if (item.getAttribute('href') === '#' + current) item.classList.add('active');
+    });
+  });
+
+  // Clic sidebar smooth scroll
+  items.forEach(item => {
+    item.addEventListener('click', e => {
+      e.preventDefault();
+      const target = document.querySelector(item.getAttribute('href'));
+      if (target) {
+        flash.classList.add('active');
+        setTimeout(() => flash.classList.remove('active'), 400);
+        target.scrollIntoView({ behavior: 'smooth' });
+      }
+    });
+  });
+
+  // Particules
+  const container = document.getElementById('particles');
+  for (let i = 0; i < 60; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    p.style.left = Math.random() * 100 + 'vw';
+    const size = (Math.random() * 3 + 2) + 'px';
+    p.style.width = size;
+    p.style.height = size;
+    p.style.animationDuration = (Math.random() * 12 + 8) + 's';
+    p.style.animationDelay = (Math.random() * 10) + 's';
+    container.appendChild(p);
+  }
+</script>
+</body>
+</html>
